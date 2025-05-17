@@ -1,0 +1,59 @@
+-- Users table
+CREATE TABLE tbl_users (
+  user_id VARCHAR(100) PRIMARY KEY,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  f_name VARCHAR(100) NOT NULL,
+  m_name VARCHAR(100),
+  l_name VARCHAR(100) NOT NULL,
+  sex VARCHAR(100) NOT NULL,
+  birthdate DATE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'user' COMMENT 'User role (e.g., user, admin)',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+-- Phrases/Words table
+CREATE TABLE tbl_phrases_words (
+  entry_id VARCHAR(100) PRIMARY KEY,
+  words VARCHAR(100) NOT NULL COMMENT 'Input Word or Sign Language Meaning',
+  is_favorite INT NOT NULL DEFAULT 0 COMMENT 'sqlite limitation (no boolean)',
+  is_match INT NOT NULL DEFAULT 0 COMMENT 'sqlite limitation (no boolean)',
+  sign_language VARCHAR(100) COMMENT 'Path to Image or Video Equivalent of words',
+  status VARCHAR(50) NOT NULL DEFAULT 'active' COMMENT 'active, archived',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated__at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  user_id VARCHAR(100) NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES tbl_users(user_id)
+);
+
+
+
+-- AudioText Phrases/Words table
+CREATE TABLE tbl_audiotext_phrases_words (
+  entry_id VARCHAR(100) PRIMARY KEY,
+  words VARCHAR(100) NOT NULL COMMENT 'Input Word or Sign Language Meaning',
+  sign_language VARCHAR(100) COMMENT 'Path to Image or Video Equivalent of words',
+  is_match INT NOT NULL DEFAULT 0 COMMENT 'sqlite limitation (no boolean)',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated__at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  user_id VARCHAR(100) NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES tbl_users(user_id)
+);
+
+
+-- Log history table
+CREATE TABLE tbl_log_history (
+  log_id VARCHAR(100) PRIMARY KEY COMMENT 'Unique ID for this log entry',
+  user_id VARCHAR(100) NOT NULL COMMENT 'Who performed the action',
+  email VARCHAR(100) NOT NULL,
+  user_role VARCHAR(50) NOT NULL COMMENT 'Snapshot of user’s role at time of action',
+  action_type VARCHAR(50) NOT NULL COMMENT 'e.g., login, create, update, delete, archive, view',
+  object_type VARCHAR(50) NOT NULL COMMENT 'Which table or feature was affected (e.g., tbl_phrases_words)',
+  object_id VARCHAR(100) COMMENT 'Primary key of the affected record, if applicable',
+  old_data TEXT COMMENT 'JSON blob of the record before the change (for update/delete)',
+  new_data TEXT COMMENT 'JSON blob of the record after the change (for create/update)',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
