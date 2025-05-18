@@ -15,18 +15,25 @@ header("Access-Control-Allow-Origin: *");
 // $password = 'DsdJ2DjLYIi';
 // $database = 'if0_38959997_db_express';
 
-$host = "localhost";
-$username = "root";
-$password = "";
+// $host = "localhost";
+// $username = "root";
+// $password = "";
+// $database = "db_express";
+
+$host = "serverless-us-central1.sysp0000.db2.skysql.com";
+$username = "dbpgf20388261";
+$port = 4087;
+$password = "sTxMf!I41vNYdWC0{9BXL52";
 $database = "db_express";
 
 // Create connection using MySQLi
-$conn = new mysqli($host, $username, $password, $database);
+// $conn = new mysqli($host, $username, $password, $database);
+$conn = new mysqli($host, $username, $password, $database, $port);
 
 // Check connection
 if ($conn->connect_error) {
     die('Connection failed: ' . $conn->connect_error);
 }
 // If you want to debug uncomment the next line
-// echo '✅ Database connected successfully';
+echo '✅ Database connected successfully';
 ?>
