@@ -43,7 +43,7 @@ foreach ($required as $field) {
 }
 
 // Generate user_id (e.g., US-0000001)
-$result = $conn->query("SELECT user_id FROM tbl_users ORDER BY user_id DESC LIMIT 1");
+$result = $mysqli->query("SELECT user_id FROM tbl_users ORDER BY user_id DESC LIMIT 1");
 if ($result && $row = $result->fetch_assoc()) {
     $lastIdNum = (int)substr($row['user_id'], 3);
     $newIdNum = $lastIdNum + 1;
@@ -53,7 +53,7 @@ if ($result && $row = $result->fetch_assoc()) {
 $user_id = 'US-' . str_pad($newIdNum, 7, '0', STR_PAD_LEFT);
 
 // Prepare and insert user
-$stmt = $conn->prepare("INSERT INTO tbl_users (user_id, email, f_name, m_name, l_name, sex, birthdate, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt = $mysqli->prepare("INSERT INTO tbl_users (user_id, email, f_name, m_name, l_name, sex, birthdate, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 $hashed_password = password_hash($input['password'], PASSWORD_DEFAULT);
 $m_name = isset($input['m_name']) ? $input['m_name'] : null;
 $stmt->bind_param(
@@ -89,7 +89,7 @@ if ($stmt->execute()) {
         'role' => $input['role']
     ]);
 
-    $log_stmt = $conn->prepare("INSERT INTO tbl_log_history (log_id, user_id, email, user_role, action_type, object_type, object_id, old_data, new_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $log_stmt = $mysqli->prepare("INSERT INTO tbl_log_history (log_id, user_id, email, user_role, action_type, object_type, object_id, old_data, new_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $log_stmt->bind_param(
         "sssssssss",
         $log_id,
@@ -113,5 +113,5 @@ if ($stmt->execute()) {
 }
 
 $stmt->close();
-$conn->close();
+$mysqli->close();
 ?>

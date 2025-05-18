@@ -34,7 +34,7 @@ if (!$input || empty($input['email']) || empty($input['password'])) {
 $email = $input['email'];
 $password = $input['password'];
 
-$stmt = $conn->prepare("SELECT * FROM tbl_users WHERE email = ?");
+$stmt = $mysqli->prepare("SELECT * FROM tbl_users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -73,7 +73,7 @@ $action_type = 'login';
 $object_type = 'tbl_users';
 $object_id = $user_id;
 $old_data = null;
-$log_stmt = $conn->prepare("INSERT INTO tbl_log_history (log_id, user_id, email, user_role, action_type, object_type, object_id, old_data, new_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$log_stmt = $mysqli->prepare("INSERT INTO tbl_log_history (log_id, user_id, email, user_role, action_type, object_type, object_id, old_data, new_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 $log_stmt->bind_param(
     "sssssssss",
     $log_id,
@@ -90,5 +90,5 @@ $log_stmt->execute();
 $log_stmt->close();
 
 $stmt->close();
-$conn->close();
+$mysqli->close();
 ?>
