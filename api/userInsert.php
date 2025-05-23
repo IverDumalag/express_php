@@ -53,11 +53,12 @@ if ($result && $row = $result->fetch_assoc()) {
 $user_id = 'US-' . str_pad($newIdNum, 7, '0', STR_PAD_LEFT);
 
 // Prepare and insert user
-$stmt = $mysqli->prepare("INSERT INTO tbl_users (user_id, email, f_name, m_name, l_name, sex, birthdate, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt = $mysqli->prepare("INSERT INTO tbl_users (user_id, email, f_name, m_name, l_name, sex, birthdate, password, role, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 $hashed_password = password_hash($input['password'], PASSWORD_DEFAULT);
 $m_name = isset($input['m_name']) ? $input['m_name'] : null;
+$updated_at = date('Y-m-d H:i:s');
 $stmt->bind_param(
-    "sssssssss",
+    "ssssssssss",
     $user_id,
     $input['email'],
     $input['f_name'],
@@ -66,7 +67,8 @@ $stmt->bind_param(
     $input['sex'],
     $input['birthdate'],
     $hashed_password,
-    $input['role']
+    $input['role'],
+    $updated_at
 );
 
 if ($stmt->execute()) {
