@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once 'dbcon.php';
 
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
@@ -24,18 +24,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 
-$required = ['words', 'sign_language', 'user_id'];
+// --- MODIFIED HERE ---
+// 'sign_language' is no longer a strictly required field; it can be empty.
+$required = ['words', 'user_id'];
 foreach ($required as $field) {
-    if (empty($input[$field])) {
+    if (!isset($input[$field]) || $input[$field] === '') { // Check for existence and non-empty for 'words', 'user_id'
         http_response_code(422);
-        echo json_encode(['status' => 422, 'message' => "Missing field: $field"]);
+        echo json_encode(['status' => 422, 'message' => "Missing or empty field: $field"]);
         exit();
     }
 }
+// --- END MODIFICATION ---
 
 $entry_id = uniqid('apw_');
 $words = $input['words'];
-$sign_language = $input['sign_language'];
+$sign_language = isset($input['sign_language']) ? $input['sign_language'] : ''; // Ensure it defaults to empty string if not provided
 $is_match = isset($input['is_match']) ? (int)$input['is_match'] : 0;
 $user_id = $input['user_id'];
 $created_at = date('Y-m-d H:i:s');
