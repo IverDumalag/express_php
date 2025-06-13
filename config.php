@@ -10,6 +10,7 @@ $name = getenv('DB_NAME');
 $port = getenv('DB_PORT') ?: 3306;  // default MySQL port
 // Create MySQLi connection
 $mysqli = new mysqli($host, $user, $pass, $name, $port);
+$mysqli->query("SET time_zone = '+08:00'");
 if ($mysqli->connect_errno) {
     // Connection failed
     http_response_code(500);
