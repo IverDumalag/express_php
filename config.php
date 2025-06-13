@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Manila');
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 // config.php – use getenv() or $_ENV to retrieve credentials set on the server
