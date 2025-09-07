@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/encryption_util.php';
 
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
@@ -25,12 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 
-// Decrypt incoming data from frontend
-$decryptedInput = EncryptionUtil::decryptArray($input, ['words']);
-
 $required = ['words', 'user_id'];
 foreach ($required as $field) {
-    if (empty($decryptedInput[$field])) {
+    if (empty($input[$field])) {
         http_response_code(422);
         echo json_encode(['status' => 422, 'message' => "Missing field: $field"]);
         exit();
@@ -38,21 +34,18 @@ foreach ($required as $field) {
 }
 
 $entry_id = uniqid('pw_');
-
-// Encrypt the words before storing in database
-$encryptedWords = EncryptionUtil::encrypt($decryptedInput['words']);
-
-$is_favorite = isset($decryptedInput['is_favorite']) ? (int)$decryptedInput['is_favorite'] : 0;
-$is_match = isset($decryptedInput['is_match']) ? (int)$decryptedInput['is_match'] : 0;
-$sign_language = isset($decryptedInput['sign_language']) ? $decryptedInput['sign_language'] : null;
-$status = isset($decryptedInput['status']) ? $decryptedInput['status'] : 'active';
-$user_id = $decryptedInput['user_id'];
+$words = $input['words'];
+$is_favorite = isset($input['is_favorite']) ? (int)$input['is_favorite'] : 0;
+$is_match = isset($input['is_match']) ? (int)$input['is_match'] : 0;
+$sign_language = isset($input['sign_language']) ? $input['sign_language'] : null;
+$status = isset($input['status']) ? $input['status'] : 'active';
+$user_id = $input['user_id'];
 
 $stmt = $mysqli->prepare("INSERT INTO tbl_phrases_words (entry_id, words, is_favorite, is_match, sign_language, status, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
 $stmt->bind_param(
     "ssiisss",
     $entry_id,
-    $encryptedWords,
+    $words,
     $is_favorite,
     $is_match,
     $sign_language,

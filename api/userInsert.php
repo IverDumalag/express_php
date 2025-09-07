@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/encryption_util.php';
 
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
@@ -33,13 +32,10 @@ if (!$input) {
     exit();
 }
 
-// Decrypt incoming data from frontend
-$decryptedInput = EncryptionUtil::decryptArray($input, EncryptionUtil::getUserEncryptedFields());
-
 // Validate required fields
 $required = ['email', 'f_name', 'l_name', 'sex', 'birthdate', 'password', 'role'];
 foreach ($required as $field) {
-    if (empty($decryptedInput[$field])) {
+    if (empty($input[$field])) {
         http_response_code(422);
         echo json_encode(['status' => 422, 'message' => "Missing field: $field"]);
         exit();
@@ -56,25 +52,22 @@ if ($result && $row = $result->fetch_assoc()) {
 }
 $user_id = 'US-' . str_pad($newIdNum, 7, '0', STR_PAD_LEFT);
 
-// Encrypt sensitive data before storing in database
-$dataToStore = EncryptionUtil::encryptArray($decryptedInput, EncryptionUtil::getUserEncryptedFields());
-
 // Prepare and insert user
 $stmt = $mysqli->prepare("INSERT INTO tbl_users (user_id, email, f_name, m_name, l_name, sex, birthdate, password, role, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$hashed_password = password_hash($decryptedInput['password'], PASSWORD_DEFAULT);
-$m_name = isset($dataToStore['m_name']) ? $dataToStore['m_name'] : null;
+$hashed_password = password_hash($input['password'], PASSWORD_DEFAULT);
+$m_name = isset($input['m_name']) ? $input['m_name'] : null;
 $updated_at = date('Y-m-d H:i:s');
 $stmt->bind_param(
     "ssssssssss",
     $user_id,
-    $dataToStore['email'],
-    $dataToStore['f_name'],
+    $input['email'],
+    $input['f_name'],
     $m_name,
-    $dataToStore['l_name'],
-    $dataToStore['sex'],
-    $dataToStore['birthdate'],
+    $input['l_name'],
+    $input['sex'],
+    $input['birthdate'],
     $hashed_password,
-    $dataToStore['role'],
+    $input['role'],
     $updated_at
 );
 

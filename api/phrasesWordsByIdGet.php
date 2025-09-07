@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/encryption_util.php';
 
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
@@ -38,10 +37,6 @@ $result = $stmt->get_result();
 
 $phrases = [];
 while ($row = $result->fetch_assoc()) {
-    // Decrypt the words field before sending to frontend
-    if (isset($row['words']) && !empty($row['words'])) {
-        $row['words'] = EncryptionUtil::decrypt($row['words']);
-    }
     $phrases[] = $row;
 }
 
