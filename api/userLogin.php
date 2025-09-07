@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/encryption_util.php';
 
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
@@ -31,11 +32,15 @@ if (!$input || empty($input['email']) || empty($input['password'])) {
     exit();
 }
 
-$email = $input['email'];
-$password = $input['password'];
+// Decrypt incoming credentials from frontend
+$decryptedInput = EncryptionUtil::decryptArray($input, ['email']);
+$email = $decryptedInput['email'];
+$password = $input['password']; // Password is not encrypted in transit, only hashed
 
+// Need to find user by encrypted email in database
+$encryptedEmail = EncryptionUtil::encrypt($email);
 $stmt = $mysqli->prepare("SELECT * FROM tbl_users WHERE email = ?");
-$stmt->bind_param("s", $email);
+$stmt->bind_param("s", $encryptedEmail);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -50,9 +55,13 @@ if ($user && password_verify($password, $user['password'])) {
     $user_id = $user['user_id'];
     $user_role = $user['role'];
     unset($user['password']);
+    
+    // Decrypt user data before sending to frontend
+    $decryptedUser = EncryptionUtil::decryptArray($user, EncryptionUtil::getUserEncryptedFields());
+    
     $log_new_data = json_encode(['user_id' => $user_id, 'email' => $email, 'role' => $user_role]);
     http_response_code(200);
-    echo json_encode(['status' => 200, 'message' => 'Login successful', 'user' => $user]);
+    echo json_encode(['status' => 200, 'message' => 'Login successful', 'user' => $decryptedUser]);
 } else {
     // If user exists, log with their id/role, else log as guest
     if ($user) {
