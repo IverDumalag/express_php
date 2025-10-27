@@ -1,7 +1,23 @@
 <?php
 date_default_timezone_set('Asia/Manila');
-header('Access-Control-Allow-Origin: *');
+
+// Comprehensive CORS headers
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+} else {
+    header("Access-Control-Allow-Origin: *");
+}
+header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: content-type, Content-Type, Authorization, X-Requested-With, Accept");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Max-Age: 3600");
 header('Content-Type: application/json');
+
+// Handle preflight OPTIONS requests globally
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 // Determine if we're using Supabase or MySQL
 $useSupabase = getenv('SUPABASE_URL') && getenv('SUPABASE_ANON_KEY');
