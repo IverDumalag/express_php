@@ -26,7 +26,7 @@ $data = [];
 
 if ($useSupabase) {
     // Fetch all users and process in PHP
-    $result = supabaseRequest('tbl_users', 'GET', null, null, 'user_id,sex');
+    $result = supabaseRequest('tbl_users', 'GET', null, [], 'user_id,sex');
     if (!isset($result['error'])) {
         $sex_counts = [];
         $total = count($result);

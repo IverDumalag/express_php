@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $data = [];
 if ($useSupabase) {
     // Fetch all phrases_words and process in PHP
-    $result = supabaseRequest('tbl_phrases_words', 'GET', null, null, 'words,is_match');
+    $result = supabaseRequest('tbl_phrases_words', 'GET', null, [], 'words,is_match');
     if (!isset($result['error'])) {
         $words_map = [];
         foreach ($result as $row) {

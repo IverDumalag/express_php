@@ -14,7 +14,7 @@ $health_data = [
 // Test database connection
 if ($useSupabase) {
     // Test Supabase connection
-    $test_result = supabaseRequest('tbl_users', 'GET', null, null, 'user_id', true);
+    $test_result = supabaseRequest('tbl_users', 'GET', null, [], 'user_id', true);
     if (isset($test_result['error'])) {
         $health_data['status'] = 'unhealthy';
         $health_data['database'] = 'connection_failed';

@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $data = [];
 if ($useSupabase) {
     // Supabase query with order by created_at descending
-    $result = supabaseRequest('tbl_feedback', 'GET', null, null, 'feedback_id,user_id,email,main_concern,details,created_at');
+    $result = supabaseRequest('tbl_feedback', 'GET', null, [], 'feedback_id,user_id,email,main_concern,details,created_at');
     if (!isset($result['error'])) {
         // Sort by created_at descending in PHP
         usort($result, function($a, $b) {

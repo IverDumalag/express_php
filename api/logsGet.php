@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $data = [];
 if ($useSupabase) {
     // Supabase query
-    $result = supabaseRequest('tbl_log_history', 'GET', null, null, 'log_id,user_id,email,user_role,action_type,object_type,object_id,old_data,new_data,created_at');
+    $result = supabaseRequest('tbl_log_history', 'GET', null, [], 'log_id,user_id,email,user_role,action_type,object_type,object_id,old_data,new_data,created_at');
     if (!isset($result['error'])) {
         // Sort by created_at descending in PHP
         usort($result, function($a, $b) {

@@ -27,7 +27,7 @@ $data = [];
 
 if ($useSupabase) {
     // Fetch all users and process in PHP
-    $result = supabaseRequest('tbl_users', 'GET', null, null, 'user_id,birthdate');
+    $result = supabaseRequest('tbl_users', 'GET', null, [], 'user_id,birthdate');
     if (!isset($result['error'])) {
         $age_counts = array_fill_keys($age_groups, 0);
         

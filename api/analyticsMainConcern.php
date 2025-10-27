@@ -26,7 +26,7 @@ $data = [];
 
 if ($useSupabase) {
     // Fetch all feedback and process in PHP
-    $result = supabaseRequest('tbl_feedback', 'GET', null, null, 'feedback_id,main_concern');
+    $result = supabaseRequest('tbl_feedback', 'GET', null, [], 'feedback_id,main_concern');
     if (!isset($result['error'])) {
         $concern_counts = [];
         

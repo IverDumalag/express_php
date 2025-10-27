@@ -20,9 +20,11 @@ if ($useSupabase) {
         // Add select parameter
         $queryParams = ['select=' . urlencode($select)];
         
-        // Add filters
-        foreach ($filters as $key => $value) {
-            $queryParams[] = $key . '=' . urlencode($value);
+        // Add filters - ensure $filters is an array
+        if (is_array($filters)) {
+            foreach ($filters as $key => $value) {
+                $queryParams[] = $key . '=' . urlencode($value);
+            }
         }
         
         if (!empty($queryParams)) {

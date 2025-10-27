@@ -17,7 +17,7 @@ $wake_data = [
 // Test database to ensure it's ready
 if ($useSupabase) {
     // Test Supabase connection
-    $test_result = supabaseRequest('tbl_users', 'GET', null, null, 'user_id', true);
+    $test_result = supabaseRequest('tbl_users', 'GET', null, [], 'user_id', true);
     if (isset($test_result['error'])) {
         $wake_data['database'] = 'connection_error';
         $wake_data['status'] = 'degraded';

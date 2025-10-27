@@ -26,7 +26,7 @@ $data = [];
 
 if ($useSupabase) {
     // Fetch all users and process in PHP
-    $result = supabaseRequest('tbl_users', 'GET', null, null, 'user_id,created_at');
+    $result = supabaseRequest('tbl_users', 'GET', null, [], 'user_id,created_at');
     if (!isset($result['error'])) {
         $daily_counts = [];
         

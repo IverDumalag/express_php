@@ -27,7 +27,7 @@ $monthly = [];
 
 if ($useSupabase) {
     // Fetch all phrases_words and process in PHP
-    $result = supabaseRequest('tbl_phrases_words', 'GET', null, null, 'entry_id,is_match,created_at');
+    $result = supabaseRequest('tbl_phrases_words', 'GET', null, [], 'entry_id,is_match,created_at');
     if (!isset($result['error'])) {
         $total = count($result);
         $matched = 0;
