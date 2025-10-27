@@ -30,18 +30,27 @@ if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
 
 $user_id = $_GET['user_id'];
 
-$stmt = $mysqli->prepare("SELECT * FROM tbl_audiotext_phrases_words WHERE user_id = ?");
-$stmt->bind_param("s", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
 $data = [];
-while ($row = $result->fetch_assoc()) {
-    $data[] = $row;
+if ($useSupabase) {
+    // Supabase query
+    $result = supabaseRequest('tbl_audiotext_phrases_words', 'GET', null, ['user_id' => 'eq.' . $user_id]);
+    if (!isset($result['error'])) {
+        $data = $result;
+    }
+} else {
+    // MySQL query
+    $stmt = $mysqli->prepare("SELECT * FROM tbl_audiotext_phrases_words WHERE user_id = ?");
+    $stmt->bind_param("s", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
+    }
+    
+    $stmt->close();
+    $mysqli->close();
 }
-
-$stmt->close();
-$mysqli->close();
 
 echo json_encode([
     'status' => 200,

@@ -32,18 +32,34 @@ if (empty($input['entry_id']) || empty($input['status'])) {
 
 $entry_id = $input['entry_id'];
 $status = $input['status'];
+$updated_at = date('Y-m-d H:i:s');
 
-$stmt = $mysqli->prepare("UPDATE tbl_phrases_words SET status = ? WHERE entry_id = ?");
-$stmt->bind_param("ss", $status, $entry_id);
+$success = false;
+if ($useSupabase) {
+    // Supabase update
+    $data = [
+        'status' => $status,
+        'updated_at' => $updated_at
+    ];
+    $result = supabaseRequest('tbl_phrases_words', 'PATCH', $data, ['entry_id' => 'eq.' . $entry_id]);
+    $success = !isset($result['error']);
+} else {
+    // MySQL update
+    $stmt = $mysqli->prepare("UPDATE tbl_phrases_words SET status = ?, updated_at = ? WHERE entry_id = ?");
+    $stmt->bind_param("sss", $status, $updated_at, $entry_id);
+    $success = $stmt->execute();
+    if (!$success) {
+        $error_msg = $stmt->error;
+    }
+    $stmt->close();
+    $mysqli->close();
+}
 
-if ($stmt->execute()) {
+if ($success) {
     http_response_code(200);
     echo json_encode(['status' => 200, 'message' => 'Status updated successfully']);
 } else {
     http_response_code(500);
-    echo json_encode(['status' => 500, 'message' => 'Database error: ' . $stmt->error]);
+    echo json_encode(['status' => 500, 'message' => 'Database error: ' . ($error_msg ?? 'Unknown error')]);
 }
-
-$stmt->close();
-$mysqli->close();
 ?>

@@ -29,19 +29,28 @@ if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
 }
 
 $user_id = $_GET['user_id'];
-
-$stmt = $mysqli->prepare("SELECT * FROM tbl_phrases_words WHERE user_id = ?");
-$stmt->bind_param("s", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
 $phrases = [];
-while ($row = $result->fetch_assoc()) {
-    $phrases[] = $row;
-}
 
-$stmt->close();
-$mysqli->close();
+if ($useSupabase) {
+    // Supabase query
+    $result = supabaseRequest('tbl_phrases_words', 'GET', null, ['user_id' => 'eq.' . $user_id]);
+    if (!isset($result['error'])) {
+        $phrases = $result;
+    }
+} else {
+    // MySQL query
+    $stmt = $mysqli->prepare("SELECT * FROM tbl_phrases_words WHERE user_id = ?");
+    $stmt->bind_param("s", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    while ($row = $result->fetch_assoc()) {
+        $phrases[] = $row;
+    }
+    
+    $stmt->close();
+    $mysqli->close();
+}
 
 echo json_encode([
     'status' => 200,

@@ -40,17 +40,36 @@ $main_concern = $input['main_concern'];
 $details = $input['details'];
 $created_at = date('Y-m-d H:i:s');
 
-$stmt = $mysqli->prepare("INSERT INTO tbl_feedback (feedback_id, user_id, email, main_concern, details, created_at) VALUES (?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("ssssss", $feedback_id, $user_id, $email, $main_concern, $details, $created_at);
+$success = false;
+if ($useSupabase) {
+    // Supabase insert
+    $data = [
+        'feedback_id' => $feedback_id,
+        'user_id' => $user_id,
+        'email' => $email,
+        'main_concern' => $main_concern,
+        'details' => $details,
+        'created_at' => $created_at
+    ];
+    $result = supabaseRequest('tbl_feedback', 'POST', $data);
+    $success = !isset($result['error']);
+} else {
+    // MySQL insert
+    $stmt = $mysqli->prepare("INSERT INTO tbl_feedback (feedback_id, user_id, email, main_concern, details, created_at) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssss", $feedback_id, $user_id, $email, $main_concern, $details, $created_at);
+    $success = $stmt->execute();
+    if (!$success) {
+        $error_msg = $stmt->error;
+    }
+    $stmt->close();
+    $mysqli->close();
+}
 
-if ($stmt->execute()) {
+if ($success) {
     http_response_code(201);
     echo json_encode(['status' => 201, 'message' => 'Feedback submitted successfully', 'feedback_id' => $feedback_id]);
 } else {
     http_response_code(500);
-    echo json_encode(['status' => 500, 'message' => 'Database error: ' . $stmt->error]);
+    echo json_encode(['status' => 500, 'message' => 'Database error: ' . ($error_msg ?? 'Unknown error')]);
 }
-
-$stmt->close();
-$mysqli->close();
 ?>

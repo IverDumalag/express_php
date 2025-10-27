@@ -12,22 +12,41 @@ $health_data = [
 ];
 
 // Test database connection
-if ($mysqli->connect_errno) {
-    $health_data['status'] = 'unhealthy';
-    $health_data['database'] = 'connection_failed';
-    $health_data['error'] = $mysqli->connect_error;
-    http_response_code(503);
-} else {
-    $health_data['database'] = 'connected';
-    
-    // Test a simple query
-    $result = $mysqli->query("SELECT 1 as test");
-    if ($result) {
-        $health_data['database_query'] = 'success';
-        $result->close();
+if ($useSupabase) {
+    // Test Supabase connection
+    $test_result = supabaseRequest('tbl_users', 'GET', null, null, 'user_id', true);
+    if (isset($test_result['error'])) {
+        $health_data['status'] = 'unhealthy';
+        $health_data['database'] = 'connection_failed';
+        $health_data['error'] = $test_result['error'];
+        $health_data['database_type'] = 'supabase';
+        http_response_code(503);
     } else {
-        $health_data['database_query'] = 'failed';
-        $health_data['status'] = 'degraded';
+        $health_data['database'] = 'connected';
+        $health_data['database_query'] = 'success';
+        $health_data['database_type'] = 'supabase';
+    }
+} else {
+    // Test MySQL connection
+    if ($mysqli->connect_errno) {
+        $health_data['status'] = 'unhealthy';
+        $health_data['database'] = 'connection_failed';
+        $health_data['error'] = $mysqli->connect_error;
+        $health_data['database_type'] = 'mysql';
+        http_response_code(503);
+    } else {
+        $health_data['database'] = 'connected';
+        $health_data['database_type'] = 'mysql';
+        
+        // Test a simple query
+        $result = $mysqli->query("SELECT 1 as test");
+        if ($result) {
+            $health_data['database_query'] = 'success';
+            $result->close();
+        } else {
+            $health_data['database_query'] = 'failed';
+            $health_data['status'] = 'degraded';
+        }
     }
 }
 

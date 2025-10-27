@@ -22,12 +22,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit();
 }
 
-$sql = "SELECT feedback_id, user_id, email, main_concern, details, created_at FROM tbl_feedback ORDER BY created_at DESC";
-$result = $mysqli->query($sql);
-
 $data = [];
-while ($row = $result->fetch_assoc()) {
-    $data[] = $row;
+if ($useSupabase) {
+    // Supabase query with order by created_at descending
+    $result = supabaseRequest('tbl_feedback', 'GET', null, null, 'feedback_id,user_id,email,main_concern,details,created_at');
+    if (!isset($result['error'])) {
+        // Sort by created_at descending in PHP
+        usort($result, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+        $data = $result;
+    }
+} else {
+    // MySQL query
+    $sql = "SELECT feedback_id, user_id, email, main_concern, details, created_at FROM tbl_feedback ORDER BY created_at DESC";
+    $result = $mysqli->query($sql);
+    
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
+    }
+    
+    $mysqli->close();
 }
 
 echo json_encode([
@@ -35,6 +50,4 @@ echo json_encode([
     'message' => 'Feedback fetched successfully',
     'data' => $data
 ]);
-
-$mysqli->close();
 ?>

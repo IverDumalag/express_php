@@ -36,12 +36,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Check if email exists in the database
-    $stmt = $mysqli->prepare("SELECT user_id FROM tbl_users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $exists = false;
+    if ($useSupabase) {
+        $result = supabaseRequest('tbl_users', 'GET', null, ['email' => 'eq.' . $email], 'user_id');
+        $exists = !empty($result) && !isset($result['error']);
+    } else {
+        $stmt = $mysqli->prepare("SELECT user_id FROM tbl_users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $exists = $result->num_rows > 0;
+        $stmt->close();
+        $mysqli->close();
+    }
 
-    if ($result->num_rows > 0) {
+    if ($exists) {
         // Email exists
         http_response_code(200);
         echo json_encode([
@@ -58,9 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => 'Email is available'
         ]);
     }
-
-    $stmt->close();
-    $mysqli->close();
     exit();
 }
 
@@ -77,12 +83,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
 
         // Check if email exists in the database
-        $stmt = $mysqli->prepare("SELECT user_id FROM tbl_users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $exists = false;
+        if ($useSupabase) {
+            $result = supabaseRequest('tbl_users', 'GET', null, ['email' => 'eq.' . $email], 'user_id');
+            $exists = !empty($result) && !isset($result['error']);
+        } else {
+            $stmt = $mysqli->prepare("SELECT user_id FROM tbl_users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $exists = $result->num_rows > 0;
+            $stmt->close();
+        }
 
-        if ($result->num_rows > 0) {
+        if ($exists) {
             // Email exists
             echo json_encode([
                 'status' => 200, 
@@ -97,17 +111,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'message' => 'Email is available'
             ]);
         }
-
-        $stmt->close();
-        $mysqli->close();
+        
+        if (!$useSupabase) {
+            $mysqli->close();
+        }
         exit();
     }
 
     // Default GET behavior - return list of users
-    $result = $mysqli->query("SELECT * FROM tbl_users");
     $users = [];
-    while ($row = $result->fetch_assoc()) {
-        $users[] = $row;
+    if ($useSupabase) {
+        $result = supabaseRequest('tbl_users', 'GET');
+        if (!isset($result['error'])) {
+            $users = $result;
+        }
+    } else {
+        $result = $mysqli->query("SELECT * FROM tbl_users");
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+        $mysqli->close();
     }
     echo json_encode($users);
     exit();

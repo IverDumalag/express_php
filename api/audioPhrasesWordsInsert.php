@@ -39,21 +39,42 @@ foreach ($required as $field) {
 $entry_id = uniqid('apw_');
 $words = $input['words'];
 $sign_language = isset($input['sign_language']) ? $input['sign_language'] : ''; // Ensure it defaults to empty string if not provided
-$is_match = isset($input['is_match']) ? (int)$input['is_match'] : 0;
+$is_match_input = isset($input['is_match']) ? $input['is_match'] : 0;
 $user_id = $input['user_id'];
 $created_at = date('Y-m-d H:i:s');
 
-$stmt = $mysqli->prepare("INSERT INTO tbl_audiotext_phrases_words (entry_id, words, sign_language, is_match, created_at, user_id) VALUES (?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("ssssss", $entry_id, $words, $sign_language, $is_match, $created_at, $user_id);
+$success = false;
+if ($useSupabase) {
+    // Supabase insert - use boolean directly
+    $is_match = (bool)$is_match_input;
+    $data = [
+        'entry_id' => $entry_id,
+        'words' => $words,
+        'sign_language' => $sign_language,
+        'is_match' => $is_match,
+        'created_at' => $created_at,
+        'user_id' => $user_id
+    ];
+    $result = supabaseRequest('tbl_audiotext_phrases_words', 'POST', $data);
+    $success = !isset($result['error']);
+} else {
+    // MySQL insert - convert to integer
+    $is_match = (int)$is_match_input;
+    $stmt = $mysqli->prepare("INSERT INTO tbl_audiotext_phrases_words (entry_id, words, sign_language, is_match, created_at, user_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssss", $entry_id, $words, $sign_language, $is_match, $created_at, $user_id);
+    $success = $stmt->execute();
+    if (!$success) {
+        $error_msg = $stmt->error;
+    }
+    $stmt->close();
+    $mysqli->close();
+}
 
-if ($stmt->execute()) {
+if ($success) {
     http_response_code(201);
     echo json_encode(['status' => 201, 'message' => 'Audio phrase inserted successfully', 'entry_id' => $entry_id]);
 } else {
     http_response_code(500);
-    echo json_encode(['status' => 500, 'message' => 'Database error: ' . $stmt->error]);
+    echo json_encode(['status' => 500, 'message' => 'Database error: ' . ($error_msg ?? 'Unknown error')]);
 }
-
-$stmt->close();
-$mysqli->close();
 ?>
