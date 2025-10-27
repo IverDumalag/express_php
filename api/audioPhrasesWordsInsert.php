@@ -42,6 +42,7 @@ $sign_language = isset($input['sign_language']) ? $input['sign_language'] : ''; 
 $is_match_input = isset($input['is_match']) ? $input['is_match'] : 0;
 $user_id = $input['user_id'];
 $created_at = date('Y-m-d H:i:s');
+$updated_at = date('Y-m-d H:i:s');
 
 $success = false;
 if ($useSupabase) {
@@ -53,6 +54,7 @@ if ($useSupabase) {
         'sign_language' => $sign_language,
         'is_match' => $is_match,
         'created_at' => $created_at,
+        'updated_at' => $updated_at,
         'user_id' => $user_id
     ];
     $result = supabaseRequest('tbl_audiotext_phrases_words', 'POST', $data);
@@ -60,8 +62,8 @@ if ($useSupabase) {
 } else {
     // MySQL insert - convert to integer
     $is_match = (int)$is_match_input;
-    $stmt = $mysqli->prepare("INSERT INTO tbl_audiotext_phrases_words (entry_id, words, sign_language, is_match, created_at, user_id) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssss", $entry_id, $words, $sign_language, $is_match, $created_at, $user_id);
+    $stmt = $mysqli->prepare("INSERT INTO tbl_audiotext_phrases_words (entry_id, words, sign_language, is_match, created_at, updated_at, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssss", $entry_id, $words, $sign_language, $is_match, $created_at, $updated_at, $user_id);
     $success = $stmt->execute();
     if (!$success) {
         $error_msg = $stmt->error;
